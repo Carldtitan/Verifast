@@ -22,14 +22,27 @@ from pathlib import Path
 _PORT_RE = re.compile(r"(input|output)\s+logic\s*(\[(\d+):(\d+)\])?\s*(\w+)")
 
 
-def _parse_ports(golden_sv: str) -> tuple[list[tuple[str, int]], list[tuple[str, int]]]:
-    """Return (inputs, outputs) as (name, width), excluding clk/rst."""
+def _header_ports(golden_sv: str) -> list[tuple[str, str, int]]:
+    """Return (direction, name, width) for every port in the module header."""
     header = golden_sv.split(");", 1)[0]
-    ins: list[tuple[str, int]] = []
-    outs: list[tuple[str, int]] = []
+    ports: list[tuple[str, str, int]] = []
     for m in _PORT_RE.finditer(header):
         direction, _rng, hi, lo, name = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
         width = (int(hi) - int(lo) + 1) if hi is not None else 1
+        ports.append((direction, name, width))
+    return ports
+
+
+def _is_sequential(golden_sv: str) -> bool:
+    names = {name for _, name, _ in _header_ports(golden_sv)}
+    return "clk" in names or "rst" in names
+
+
+def _parse_ports(golden_sv: str) -> tuple[list[tuple[str, int]], list[tuple[str, int]]]:
+    """Return (inputs, outputs) as (name, width), excluding clk/rst."""
+    ins: list[tuple[str, int]] = []
+    outs: list[tuple[str, int]] = []
+    for direction, name, width in _header_ports(golden_sv):
         if name in ("clk", "rst"):
             continue
         (ins if direction == "input" else outs).append((name, width))
@@ -40,7 +53,7 @@ def _rename_module(sv: str, new_name: str) -> str:
     return re.sub(r"\bmodule\s+\w+", f"module {new_name}", sv, count=1)
 
 
-def _build_tb(ins, outs, cycles: int = 200) -> str:
+def _build_seq_tb(ins, outs, cycles: int = 200) -> str:
     portmap = lambda inst: ", ".join(
         [".clk(clk)", ".rst(rst)"]
         + [f".{n}({n})" for n, _ in ins]
@@ -78,6 +91,40 @@ endmodule
 """
 
 
+def _build_comb_tb(ins, outs, cycles: int = 200) -> str:
+    portmap = lambda inst: ", ".join(
+        [f".{n}({n})" for n, _ in ins]
+        + [f".{n}({inst}_{n})" for n, _ in outs]
+    )
+    decls = []
+    for n, w in ins:
+        decls.append(f"  logic {'' if w == 1 else f'[{w-1}:0] '}{n};")
+    for n, w in outs:
+        decls.append(f"  logic {'' if w == 1 else f'[{w-1}:0] '}dut_{n};")
+        decls.append(f"  logic {'' if w == 1 else f'[{w-1}:0] '}ref_{n};")
+    drive = "\n".join(f"      {n} = $random;" for n, _ in ins)
+    cmp = " || ".join(f"(dut_{n} !== ref_{n})" for n, _ in outs) or "1'b0"
+    return f"""
+module tb;
+{chr(10).join(decls)}
+  integer i;
+  integer fails = 0;
+  dut  d ({portmap('dut')});
+  ref_ r ({portmap('ref')});
+  initial begin
+    for (i = 0; i < {cycles}; i = i + 1) begin
+{drive}
+      #1;
+      if ({cmp}) fails = fails + 1;
+    end
+    if (fails == 0) $display("COSIM_PASS");
+    else            $display("COSIM_FAIL %0d", fails);
+    $finish;
+  end
+endmodule
+"""
+
+
 def _run(cmd, cwd, timeout=120):
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
 
@@ -92,7 +139,8 @@ def grade(candidate_sv: str, golden_sv: str) -> dict:
         gold = _rename_module(golden_sv, "ref_")
         (work / "dut.sv").write_text(cand, encoding="utf-8")
         (work / "ref.sv").write_text(gold, encoding="utf-8")
-        (work / "tb.sv").write_text(_build_tb(ins, outs), encoding="utf-8")
+        tb = _build_seq_tb(ins, outs) if _is_sequential(golden_sv) else _build_comb_tb(ins, outs)
+        (work / "tb.sv").write_text(tb, encoding="utf-8")
 
         # 1. compile (lint-allowed) — does the candidate build at all?
         c = _run(["verilator", "--binary", "--timing", "-Wno-lint", "-Wno-INITIALDLY",

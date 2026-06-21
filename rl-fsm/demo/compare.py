@@ -35,7 +35,10 @@ def _fmt(res: core.ArmResult) -> str:
         f"latency          : {res.latency_s:.2f} s",
         f"speed            : {res.tokens_per_s:.1f} tok/s",
         "",
-        "----- model output (code that was graded) -----",
+        "----- raw model output -----",
+        (res.raw_output or "(empty)"),
+        "",
+        "----- SystemVerilog (verified) -----",
         (res.code or "(no parseable code produced)"),
     ]
     return "\n".join(lines)

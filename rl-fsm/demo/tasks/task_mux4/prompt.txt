@@ -1,0 +1,1 @@
+Design a combinational module mux4 with inputs d0,d1,d2,d3 (each 8-bit), sel (2-bit), output y (8-bit). y is the selected input. No clock.
