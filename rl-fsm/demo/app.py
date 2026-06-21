@@ -50,10 +50,10 @@ def render(col, title, res: core.ArmResult):
         m4.metric("completion tokens", res.completion_tokens)
         m5.metric("latency", f"{res.latency_s:.2f}s")
         m6.metric("speed", f"{res.tokens_per_s:.1f} tok/s")
-        st.markdown("**SystemVerilog that was verified**")
+        st.markdown("**Raw model output**")
+        st.code(res.raw_output or "(empty)", language="text")
+        st.markdown("**SystemVerilog (verified)**")
         st.code(res.code or "(no parseable code produced)", language="verilog")
-        with st.expander("raw model output"):
-            st.code(res.raw_output, language="markdown")
 
 
 if go:
