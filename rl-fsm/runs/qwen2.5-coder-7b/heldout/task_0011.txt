@@ -1,0 +1,50 @@
+```systemverilog
+module fsm_wait (
+    input wire clk,
+    input wire rst,
+    input wire i0,
+    input wire i1,
+    output reg [1:0] o0
+);
+
+    // State definitions
+    typedef enum reg [1:0] {S0, S1, S2} state_t;
+    state_t current_state, next_state;
+
+    // State transition logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            current_state <= S0;
+        end else begin
+            current_state <= next_state;
+        end
+    end
+
+    // Output logic
+    always @(*) begin
+        case (current_state)
+            S0: begin
+                o0 = 2;
+                if (i0) next_state = S1;
+                else next_state = S0;
+            end
+            S1: begin
+                o0 = 0;
+                if (i0) next_state = S0;
+                else next_state = S0;
+            end
+            S2: begin
+                o0 = 1;
+                if (i0) next_state = S0;
+                if (i1) next_state = S1;
+                else next_state = S0;
+            end
+            default: begin
+                o0 = 2;
+                next_state = S0;
+            end
+        endcase
+    end
+
+endmodule
+```

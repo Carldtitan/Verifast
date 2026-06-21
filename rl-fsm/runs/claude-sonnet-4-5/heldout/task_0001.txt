@@ -1,0 +1,50 @@
+```systemverilog
+module fsm_arm (
+    input  logic       clk,
+    input  logic       rst,
+    input  logic       i0,
+    output logic [1:0] o0
+);
+
+    // State encoding
+    typedef enum logic [1:0] {
+        S0 = 2'b00,
+        S1 = 2'b01,
+        S2 = 2'b10,
+        S3 = 2'b11
+    } state_t;
+
+    state_t current_state, next_state;
+
+    // State register
+    always_ff @(posedge clk) begin
+        if (rst)
+            current_state <= S0;
+        else
+            current_state <= next_state;
+    end
+
+    // Next state logic
+    always_comb begin
+        case (current_state)
+            S0: next_state = S2;
+            S1: next_state = S3;
+            S2: next_state = S3;
+            S3: next_state = S0;
+            default: next_state = S0;
+        endcase
+    end
+
+    // Output logic (Moore - depends only on current state)
+    always_comb begin
+        case (current_state)
+            S0: o0 = 2'd1;
+            S1: o0 = 2'd1;
+            S2: o0 = 2'd2;
+            S3: o0 = 2'd3;
+            default: o0 = 2'd0;
+        endcase
+    end
+
+endmodule
+```

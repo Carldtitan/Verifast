@@ -1,0 +1,24 @@
+machine fsm_arm {
+  in bit i0
+  in bit i1
+  out bit[1:0] o0
+  out bit[1:0] o1
+  reset = S0
+  state S0 {
+    o0 = 3
+    o1 = 3
+    else -> S0
+  }
+  state S1 {
+    o0 = 0
+    o1 = 0
+    else -> S0
+  }
+  state S2 {
+    o0 = 1
+    o1 = 3
+    when i0 -> S0
+    when i0 -> S0
+    else -> S2
+  }
+}

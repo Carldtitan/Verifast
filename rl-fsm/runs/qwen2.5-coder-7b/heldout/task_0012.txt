@@ -1,0 +1,57 @@
+```systemverilog
+module fsm_fire (
+    input i0,
+    input i1,
+    output reg o0,
+    output reg [1:0] o1
+);
+
+    // Define states
+    localparam S0 = 2'b00;
+    localparam S1 = 2'b01;
+
+    // State register
+    reg [1:0] state;
+
+    // Next state logic
+    reg [1:0] next_state;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    // Output logic
+    always @(*) begin
+        case (state)
+            S0: begin
+                o0 = 1;
+                o1 = 2'b00;
+                if (i1) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            S1: begin
+                o0 = 1;
+                o1 = 2'b00;
+                if (i0) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            default: begin
+                o0 = 1;
+                o1 = 2'b00;
+                next_state = S0;
+            end
+        endcase
+    end
+
+endmodule
+```

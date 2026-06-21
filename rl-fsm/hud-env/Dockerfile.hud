@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV LANG=en_US.UTF-8
+
+# Verilator + a C++ toolchain (Verilator compiles the cosim) — the reward needs these.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        verilator && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY pyproject.toml env.py tasks.py grader.py /app/
+COPY transpiler/ /app/transpiler/
+COPY task_data/ /app/task_data/
+
+RUN pip install --no-cache-dir -e /app
+
+EXPOSE 8765
+CMD ["python3", "-m", "hud", "serve", "env:env", "--host", "0.0.0.0", "--port", "8765"]

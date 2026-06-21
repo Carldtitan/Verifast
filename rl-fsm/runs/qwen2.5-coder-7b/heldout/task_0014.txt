@@ -1,0 +1,72 @@
+```systemverilog
+module fsm_scan (
+    input i0,
+    input i1,
+    input i2,
+    output reg o0,
+    output reg o1
+);
+
+    // State definitions
+    localparam S0 = 2'b00,
+               S1 = 2'b01,
+               S2 = 2'b10,
+               S3 = 2'b11;
+
+    reg [1:0] state, next_state;
+
+    // State transition logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    // Next state logic
+    always @(*) begin
+        next_state = state;
+        case (state)
+            S0: begin
+                o0 = 0;
+                o1 = 0;
+                if (i0 || i1 || i2) begin
+                    next_state = S2;
+                end
+            end
+            S1: begin
+                o0 = 1;
+                o1 = 0;
+                if (i2) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            S2: begin
+                o0 = 0;
+                o1 = 0;
+                if (i0 || i1 || i2) begin
+                    next_state = S1;
+                end
+            end
+            S3: begin
+                o0 = 0;
+                o1 = 0;
+                if (i0) begin
+                    next_state = S3;
+                end else if (i1) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            default: begin
+                next_state = S0;
+            end
+        endcase
+    end
+
+endmodule
+```

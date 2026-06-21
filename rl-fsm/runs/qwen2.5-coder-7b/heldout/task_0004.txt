@@ -1,0 +1,45 @@
+```systemverilog
+module fsm_idle (
+    input clk,
+    input rst,
+    input i0,
+    input i1,
+    output reg [1:0] o0
+);
+
+    // State definitions
+    localparam S0 = 2'b00;
+    localparam S1 = 2'b01;
+
+    // State register
+    reg [1:0] state;
+
+    // Next state logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            case (state)
+                S0: begin
+                    o0 <= 2;
+                    if (i1) begin
+                        state <= S1;
+                    end else begin
+                        state <= S0;
+                    end
+                end
+                S1: begin
+                    o0 <= 3;
+                    if (i0) begin
+                        state <= S0;
+                    end else begin
+                        state <= S0;
+                    end
+                end
+                default: state <= S0;
+            endcase
+        end
+    end
+
+endmodule
+```

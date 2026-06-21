@@ -1,0 +1,17 @@
+machine fsm_idle {
+  in bit i0
+  out bit[1:0] o0
+  reset = S0
+  state S0 {
+    o0 = 0
+    else -> S0
+  }
+  state S1 {
+    o0 = 0
+    else -> S2
+  }
+  state S2 {
+    o0 = 1
+    else -> S0
+  }
+}

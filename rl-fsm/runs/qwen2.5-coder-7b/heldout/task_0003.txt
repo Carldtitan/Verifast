@@ -1,0 +1,56 @@
+```systemverilog
+module fsm_arm (
+    input i0,
+    output reg o0
+);
+
+    // State definition
+    typedef enum reg [1:0] {
+        S0,
+        S1
+    } state_t;
+
+    // Current state and next state
+    state_t state, next_state;
+
+    // Moore output logic
+    always @(*) begin
+        case (state)
+            S0: o0 = 1;
+            S1: o0 = 1;
+            default: o0 = 0; // Should never reach here
+        endcase
+    end
+
+    // Next state logic
+    always @(*) begin
+        case (state)
+            S0: begin
+                if (i0) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            S1: begin
+                if (i0) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            default: next_state = S0; // Should never reach here
+        endcase
+    end
+
+    // State register
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+endmodule
+```

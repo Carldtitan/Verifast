@@ -1,0 +1,28 @@
+# seq_detect_101.fsm — asserts 'y' on the cycle that completes a "101" pattern.
+machine seq_detect_101 {
+  in  bit x          # serial input bit
+  out bit y          # 1 only when a "101" completes
+
+  reset = S0
+
+  state S0 {         # seen nothing / reset
+    y = 0
+    when x -> S1     # saw '1'
+    else  -> S0
+  }
+  state S1 {         # saw "1"
+    y = 0
+    when x -> S1     # "11" -> stay, last bit is still '1'
+    else  -> S2      # saw "10"
+  }
+  state S2 {         # saw "10"
+    y = 0
+    when x -> S3     # saw "101" -> completed next cycle
+    else  -> S0
+  }
+  state S3 {         # "101" just completed (overlapping)
+    y = 1
+    when x -> S1     # overlap: this '1' can start a new "1"
+    else  -> S2
+  }
+}

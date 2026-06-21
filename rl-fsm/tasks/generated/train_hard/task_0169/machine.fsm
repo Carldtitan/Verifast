@@ -1,0 +1,29 @@
+machine fsm_lock {
+  in bit i0
+  in bit i1
+  out bit[1:0] o0
+  out bit o1
+  reset = S0
+  state S0 {
+    o0 = 1
+    o1 = 0
+    when i1 -> S1
+    else -> S2
+  }
+  state S1 {
+    o0 = 1
+    o1 = 1
+    else -> S3
+  }
+  state S2 {
+    o0 = 3
+    o1 = 0
+    when i1 -> S2
+    else -> S3
+  }
+  state S3 {
+    o0 = 3
+    o1 = 1
+    else -> S1
+  }
+}

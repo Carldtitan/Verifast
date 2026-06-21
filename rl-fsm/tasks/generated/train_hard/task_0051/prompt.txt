@@ -1,0 +1,41 @@
+Design a synchronous Moore finite state machine named 'fsm_load'.
+Clock 'clk' and synchronous active-high reset 'rst' are implicit inputs.
+Inputs: i0 (1-bit input).
+Outputs: o0 (1-bit output), o1 (1-bit output).
+On reset the machine is in state S0.
+It has 8 states: S0, S1, S2, S3, S4, S5, S6, S7.
+
+Per-state behavior (Moore — outputs depend on the current state only):
+- In S0: outputs o0=0; o1=1.
+    if i0 is 1, go to S1 (checked in this order);
+    if i0 is 1, go to S4 (checked in this order);
+    otherwise go to S5.
+- In S1: outputs o0=0; o1=1.
+    if i0 is 1, go to S0 (checked in this order);
+    if i0 is 1, go to S6 (checked in this order);
+    if i0 is 1, go to S5 (checked in this order);
+    otherwise go to S7.
+- In S2: outputs o0=0; o1=0.
+    if i0 is 1, go to S4 (checked in this order);
+    if i0 is 1, go to S2 (checked in this order);
+    if i0 is 1, go to S6 (checked in this order);
+    otherwise go to S3.
+- In S3: outputs o0=0; o1=0.
+    otherwise go to S7.
+- In S4: outputs o0=1; o1=0.
+    if i0 is 1, go to S6 (checked in this order);
+    if i0 is 1, go to S0 (checked in this order);
+    if i0 is 1, go to S3 (checked in this order);
+    otherwise go to S3.
+- In S5: outputs o0=1; o1=0.
+    if i0 is 1, go to S1 (checked in this order);
+    if i0 is 1, go to S2 (checked in this order);
+    if i0 is 1, go to S4 (checked in this order);
+    otherwise go to S7.
+- In S6: outputs o0=1; o1=0.
+    otherwise go to S1.
+- In S7: outputs o0=1; o1=0.
+    if i0 is 1, go to S7 (checked in this order);
+    otherwise go to S1.
+
+Write a single synthesizable SystemVerilog module with this exact interface. Output only the module.

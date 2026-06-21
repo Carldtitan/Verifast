@@ -1,0 +1,42 @@
+machine fsm_scan {
+  in bit i0
+  out bit o0
+  reset = S0
+  state S0 {
+    o0 = 0
+    when i0 -> S6
+    when i0 -> S4
+    when i0 -> S3
+    else -> S1
+  }
+  state S1 {
+    o0 = 1
+    when i0 -> S6
+    when i0 -> S2
+    else -> S3
+  }
+  state S2 {
+    o0 = 1
+    else -> S3
+  }
+  state S3 {
+    o0 = 1
+    when i0 -> S1
+    when i0 -> S0
+    when i0 -> S5
+    else -> S2
+  }
+  state S4 {
+    o0 = 1
+    else -> S5
+  }
+  state S5 {
+    o0 = 0
+    when i0 -> S3
+    else -> S3
+  }
+  state S6 {
+    o0 = 0
+    else -> S1
+  }
+}

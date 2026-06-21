@@ -1,0 +1,24 @@
+```fsm
+machine fsm_idle {
+  in  bit i0          # 1-bit input
+  out bit[1:0] o0     # 2-bit output
+
+  reset = S0
+
+  state S0 {         # state 0
+    o0 = 0
+    when i0 -> S0     # stay in S0 if i0 is high
+    else     -> S0
+  }
+  state S1 {         # state 1
+    o0 = 0
+    when i0 -> S2     # go to S2 if i0 is high
+    else     -> S2
+  }
+  state S2 {         # state 2
+    o0 = 1
+    when i0 -> S0     # go to S0 if i0 is high
+    else     -> S0
+  }
+}
+```

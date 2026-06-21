@@ -1,0 +1,13 @@
+machine fsm_fire {
+  in bit i0
+  out bit o0
+  reset = S0
+  state S0 {
+    o0 = 1
+    else -> S0
+  }
+  state S1 {
+    o0 = 1
+    else -> S0
+  }
+}

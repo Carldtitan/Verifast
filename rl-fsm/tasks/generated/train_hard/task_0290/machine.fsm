@@ -1,0 +1,52 @@
+machine fsm_run {
+  in bit i0
+  out bit[1:0] o0
+  out bit o1
+  reset = S0
+  state S0 {
+    o0 = 3
+    o1 = 0
+    when i0 -> S1
+    when i0 -> S0
+    when i0 -> S1
+    else -> S4
+  }
+  state S1 {
+    o0 = 2
+    o1 = 0
+    when i0 -> S0
+    else -> S0
+  }
+  state S2 {
+    o0 = 0
+    o1 = 0
+    else -> S4
+  }
+  state S3 {
+    o0 = 2
+    o1 = 0
+    when i0 -> S4
+    when i0 -> S6
+    when i0 -> S5
+    else -> S5
+  }
+  state S4 {
+    o0 = 3
+    o1 = 0
+    else -> S1
+  }
+  state S5 {
+    o0 = 0
+    o1 = 0
+    when i0 -> S3
+    when i0 -> S2
+    when i0 -> S6
+    else -> S2
+  }
+  state S6 {
+    o0 = 2
+    o1 = 0
+    when i0 -> S5
+    else -> S6
+  }
+}

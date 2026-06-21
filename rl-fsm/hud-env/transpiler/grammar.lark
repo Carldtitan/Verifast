@@ -1,0 +1,123 @@
+// =============================================================================
+// FSM_DSL v0.1 grammar  (Req 15.5)
+//
+// Loaded by transpiler/parser.py with lark in `lalr` mode and the `basic`
+// (non-contextual) lexer so the seven reserved keywords are reserved globally
+// (Req 4.4-4.6). The grammar derives EXACTLY the seven FSM_DSL constructs and
+// provides EXACTLY ONE syntactic form per construct -- no synonyms, no
+// alternative spellings (Req 1.1, 4.6, 4.7):
+//
+//   1. machine declaration ....... machine NAME { ... }
+//   2. input port declaration .... in TYPE name
+//   3. output port declaration ... out TYPE name
+//   4. reset-state declaration ... reset = STATE
+//   5. state declaration ......... state NAME { ... }
+//   6. output assignment ......... name = VALUE
+//   7. transition ................ when COND -> STATE   |   else -> STATE
+//
+// The closed, case-sensitive keyword set is exactly:
+//     machine  in  out  reset  state  when  else
+// These appear below as inline string-literal terminals; lark gives literal
+// terminals priority over the NAME regex, so they are reserved words and a
+// token that merely differs in letter case (e.g. `Machine`) is NOT a keyword
+// (Req 4.5) -- it lexes as a NAME and fails to parse in keyword position.
+// =============================================================================
+
+// ---- Top level ----------------------------------------------------------
+// Zero-or-more machines are admitted syntactically; the "exactly one machine
+// per file" rule (Req 1.2, 1.3) is enforced by the AST builder so that a
+// located diagnostic (not a bare parse error) is produced for 0 or >1.
+start: machine*
+
+// ---- 1. Machine declaration:  machine NAME { ... } ----------------------
+machine: "machine" NAME "{" machine_item* "}"
+
+// Items inside a machine body. Each begins with a distinct reserved keyword
+// (in / out / reset / state), so the choice is unambiguous under LALR(1).
+machine_item: in_decl
+            | out_decl
+            | reset_decl
+            | state_decl
+
+// ---- 2. Input port declaration:  in TYPE name ---------------------------
+in_decl: "in" port_type NAME
+
+// ---- 3. Output port declaration:  out TYPE name -------------------------
+out_decl: "out" port_type NAME
+
+// ---- 4. Reset-state declaration:  reset = STATE -------------------------
+// STATE is a state name (resolved to a declared state by the safety checker).
+reset_decl: "reset" "=" NAME
+
+// ---- 5. State declaration:  state NAME { ... } --------------------------
+state_decl: "state" NAME "{" state_item* "}"
+
+// Items inside a state body: an output assignment begins with a NAME, a
+// transition begins with the reserved keyword `when` or `else` -- distinct
+// under LALR(1).
+state_item: output_assignment
+          | transition
+
+// ---- 6. Output assignment:  name = VALUE --------------------------------
+// VALUE is a non-negative integer literal (width-checked against the output
+// type by later stages).
+output_assignment: NAME "=" INT
+
+// ---- 7. Transition:  when COND -> STATE  |  else -> STATE ---------------
+transition: "when" condition "->" NAME   -> when_transition
+          | "else" "->" NAME             -> else_transition
+
+// ---- Port type tokens:  bit  /  bit[H:L] --------------------------------
+// The type *name* is captured as a NAME (canonically `bit`) and the optional
+// [H:L] range as two integer literals. Recognizing the name as exactly `bit`
+// and validating the index range (H >= L >= 0, range 0..65535) are done by the
+// AST builder, so unrecognized types (Req 2.6) and bad ranges (Req 2.5) yield
+// located errors with no signal emitted rather than opaque parse failures.
+port_type: NAME                       -> scalar_type
+         | NAME "[" INT ":" INT "]"   -> vector_type
+
+// ---- Guard condition expression for `when COND` -------------------------
+// A boolean / comparison expression over input ports (identifiers, optional
+// bit-selects) and non-negative integer literals. Standard precedence:
+//   ||  <  &&  <  (== != < <= > >=)  <  unary !  <  primary
+// Left recursion is used deliberately (LALR-friendly). The AST builder stores
+// the normalized expression text (design Condition.text).
+?condition: or_expr
+
+?or_expr: or_expr "||" and_expr   -> or_op
+        | and_expr
+
+?and_expr: and_expr "&&" not_expr -> and_op
+         | not_expr
+
+?not_expr: "!" not_expr           -> not_op
+         | comparison
+
+?comparison: sum COMP_OP sum      -> compare
+           | sum
+
+?sum: NAME "[" INT "]"            -> bit_select
+    | NAME                       -> identifier
+    | INT                        -> literal
+    | "(" condition ")"
+
+// Comparison / equality operators (longest-match handled by the lexer).
+COMP_OP: "==" | "!=" | "<=" | ">=" | "<" | ">"
+
+// ---- Terminals ----------------------------------------------------------
+// Identifiers: ASCII letter/underscore followed by letters/digits/underscores.
+NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+// Non-negative integer literals.
+INT: /[0-9]+/
+
+// Line comments: `#` to end of line, excluding the newline, stripped before
+// parsing (Req 4.1, 4.3). FSM_DSL defines no string/quoted tokens, so a `#`
+// is always a comment start (Req 4.2 holds vacuously). Comment removal leaves
+// the surviving token stream unchanged.
+COMMENT: /#[^\n]*/
+
+// Whitespace is insignificant between tokens.
+%import common.WS
+%ignore WS
+%ignore COMMENT

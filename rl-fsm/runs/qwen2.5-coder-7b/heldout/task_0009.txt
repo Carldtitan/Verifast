@@ -1,0 +1,83 @@
+```systemverilog
+module fsm_hold (
+    input wire i0,
+    output reg o0
+);
+
+    // State definitions
+    localparam S0 = 3'b000,
+               S1 = 3'b001,
+               S2 = 3'b010,
+               S3 = 3'b011,
+               S4 = 3'b100;
+
+    reg [1:0] state, next_state;
+
+    // State transition logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    // Output logic
+    always @(*) begin
+        case (state)
+            S0: o0 = 0;
+            S1: o0 = 1;
+            S2: o0 = 0;
+            S3: o0 = 1;
+            S4: o0 = 0;
+            default: o0 = 0; // Should not reach here
+        endcase
+    end
+
+    // Next state logic
+    always @(*) begin
+        next_state = state;
+        case (state)
+            S0: begin
+                if (i0) begin
+                    next_state = S0;
+                end else if (i0) begin
+                    next_state = S2;
+                end else begin
+                    next_state = S4;
+                end
+            end
+            S1: begin
+                if (i0) begin
+                    next_state = S0;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            S2: begin
+                if (i0) begin
+                    next_state = S4;
+                end else begin
+                    next_state = S2;
+                end
+            end
+            S3: begin
+                if (i0) begin
+                    next_state = S3;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            S4: begin
+                if (i0) begin
+                    next_state = S2;
+                end else begin
+                    next_state = S2;
+                end
+            end
+            default: next_state = S0; // Should not reach here
+        endcase
+    end
+
+endmodule
+```

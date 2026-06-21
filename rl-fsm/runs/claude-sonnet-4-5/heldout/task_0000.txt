@@ -1,0 +1,68 @@
+```systemverilog
+module fsm_scan (
+    input  logic clk,
+    input  logic rst,
+    input  logic i0,
+    input  logic i1,
+    input  logic i2,
+    output logic o0,
+    output logic o1
+);
+
+    // State encoding
+    typedef enum logic [0:0] {
+        S0 = 1'b0,
+        S1 = 1'b1
+    } state_t;
+
+    state_t current_state, next_state;
+
+    // State register
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            current_state <= S0;
+        end else begin
+            current_state <= next_state;
+        end
+    end
+
+    // Next state logic
+    always_comb begin
+        next_state = current_state;
+        case (current_state)
+            S0: begin
+                next_state = S1;
+            end
+            S1: begin
+                if (i0 == 1'b1) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            default: begin
+                next_state = S0;
+            end
+        endcase
+    end
+
+    // Output logic (Moore machine - outputs depend only on current state)
+    always_comb begin
+        case (current_state)
+            S0: begin
+                o0 = 1'b0;
+                o1 = 1'b0;
+            end
+            S1: begin
+                o0 = 1'b0;
+                o1 = 1'b1;
+            end
+            default: begin
+                o0 = 1'b0;
+                o1 = 1'b0;
+            end
+        endcase
+    end
+
+endmodule
+```

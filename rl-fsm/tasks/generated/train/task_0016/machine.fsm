@@ -1,0 +1,14 @@
+machine fsm_run {
+  in bit i0
+  in bit i1
+  out bit o0
+  reset = S0
+  state S0 {
+    o0 = 1
+    else -> S1
+  }
+  state S1 {
+    o0 = 1
+    else -> S1
+  }
+}

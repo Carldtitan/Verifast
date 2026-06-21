@@ -1,0 +1,37 @@
+```fsm
+machine fsm_scan {
+  in  bit i0
+  in  bit i1
+  in  bit i2
+  out bit o0
+  out bit o1
+
+  reset = S0
+
+  state S0 {
+    o0 = 0
+    o1 = 0
+    when i2 -> S1
+    else    -> S2
+  }
+  state S1 {
+    o0 = 1
+    o1 = 0
+    when i2 -> S1
+    else    -> S0
+  }
+  state S2 {
+    o0 = 0
+    o1 = 0
+    when i2 -> S1
+    else    -> S0
+  }
+  state S3 {
+    o0 = 0
+    o1 = 0
+    when i0 -> S3
+    when i1 -> S1
+    else    -> S1
+  }
+}
+```

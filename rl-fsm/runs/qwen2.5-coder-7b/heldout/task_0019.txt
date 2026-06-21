@@ -1,0 +1,78 @@
+```systemverilog
+module fsm_idle (
+    input wire clk,
+    input wire rst,
+    input wire i0,
+    input wire i1,
+    output reg [1:0] o0,
+    output reg [1:0] o1
+);
+
+    // Define states
+    typedef enum reg [1:0] {S0, S1, S2} state_t;
+    state_t current_state, next_state;
+
+    // State register
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            current_state <= S0;
+        end else begin
+            current_state <= next_state;
+        end
+    end
+
+    // Output logic
+    always @(*) begin
+        case (current_state)
+            S0: begin
+                o0 = 2'b00;
+                o1 = 2'b11;
+            end
+            S1: begin
+                o0 = 2'b11;
+                o1 = 2'b00;
+            end
+            S2: begin
+                o0 = 2'b00;
+                o1 = 2'b00;
+            end
+            default: begin
+                o0 = 2'b00;
+                o1 = 2'b00;
+            end
+        endcase
+    end
+
+    // Next state logic
+    always @(*) begin
+        next_state = current_state;
+        case (current_state)
+            S0: begin
+                if (i0) begin
+                    next_state = S2;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            S1: begin
+                if (i1) begin
+                    next_state = S0;
+                end else begin
+                    next_state = S2;
+                end
+            end
+            S2: begin
+                if (i1) begin
+                    next_state = S1;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            default: begin
+                next_state = S0;
+            end
+        endcase
+    end
+
+endmodule
+```

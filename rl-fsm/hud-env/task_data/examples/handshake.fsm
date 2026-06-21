@@ -1,0 +1,27 @@
+# handshake.fsm — three-state req/ack/busy controller.
+# 'req' is the 1-bit request input; 'busy' and 'ack' are 1-bit Moore outputs.
+machine handshake {
+  in  bit req           # request line (input)
+  out bit busy          # high while servicing the request
+  out bit ack           # high for one phase to acknowledge completion
+
+  reset = IDLE
+
+  state IDLE {          # waiting for a request
+    busy = 0
+    ack  = 0
+    when req -> BUSY     # request seen -> start servicing
+    else     -> IDLE
+  }
+  state BUSY {          # servicing the request
+    busy = 1
+    ack  = 0
+    else -> DONE         # one cycle of work, then acknowledge
+  }
+  state DONE {          # acknowledge completion
+    busy = 0
+    ack  = 1
+    when req -> DONE     # hold ack until the requester drops req
+    else     -> IDLE
+  }
+}

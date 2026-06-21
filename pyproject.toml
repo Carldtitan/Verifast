@@ -1,0 +1,9 @@
+[project]
+name = "Free-Chat"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["hud-python", "openai"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

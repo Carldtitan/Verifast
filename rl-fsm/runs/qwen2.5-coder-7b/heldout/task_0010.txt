@@ -1,0 +1,71 @@
+```systemverilog
+module fsm_arm (
+    input i0,
+    input i1,
+    input i2,
+    output reg [1:0] o0
+);
+
+    // State definitions
+    localparam S0 = 3'b000,
+               S1 = 3'b001,
+               S2 = 3'b010,
+               S3 = 3'b011,
+               S4 = 3'b100;
+
+    // Current state register
+    reg [2:0] state;
+
+    // Next state logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            case (state)
+                S0: begin
+                    o0 <= 2'b01;
+                    if (i0) begin
+                        state <= S2;
+                    end else begin
+                        state <= S4;
+                    end
+                end
+                S1: begin
+                    o0 <= 2'b00;
+                    if (i2) begin
+                        state <= S3;
+                    end else begin
+                        state <= S0;
+                    end
+                end
+                S2: begin
+                    o0 <= 2'b10;
+                    if (i0) begin
+                        state <= S4;
+                    end else begin
+                        state <= S2;
+                    end
+                end
+                S3: begin
+                    o0 <= 2'b10;
+                    if (i1) begin
+                        state <= S1;
+                    end else begin
+                        state <= S3;
+                    end
+                end
+                S4: begin
+                    o0 <= 2'b10;
+                    if (i1) begin
+                        state <= S1;
+                    end else begin
+                        state <= S4;
+                    end
+                end
+                default: state <= S0;
+            endcase
+        end
+    end
+
+endmodule
+```

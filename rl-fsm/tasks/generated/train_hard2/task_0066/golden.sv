@@ -1,0 +1,70 @@
+module fsm_idle (
+    input  logic clk,
+    input  logic rst,
+    input  logic i0,
+    input  logic i1,
+    input  logic i2,
+    output logic [1:0] o0
+);
+    typedef enum logic [3:0] { S0, S1, S2, S3, S4, S5, S6, S7, S8, S9 } state_t;
+    state_t state, next_state;
+    always_comb begin
+        next_state = state;
+        case (state)
+            S0: begin
+                if (i2) next_state = S1;
+                else next_state = S1;
+            end
+            S1: begin
+                if (i0) next_state = S3;
+                else if (i2) next_state = S7;
+                else next_state = S1;
+            end
+            S2: next_state = S0;
+            S3: begin
+                if (i1) next_state = S8;
+                else next_state = S0;
+            end
+            S4: next_state = S1;
+            S5: next_state = S4;
+            S6: begin
+                if (i2) next_state = S4;
+                else if (i2) next_state = S4;
+                else if (i2) next_state = S1;
+                else next_state = S7;
+            end
+            S7: next_state = S4;
+            S8: begin
+                if (i1) next_state = S0;
+                else next_state = S7;
+            end
+            S9: begin
+                if (i1) next_state = S5;
+                else if (i2) next_state = S7;
+                else if (i1) next_state = S9;
+                else next_state = S0;
+            end
+            default: next_state = state;
+        endcase
+    end
+    always_comb begin
+        o0 = '0;
+        case (state)
+            S0: begin o0 = 2'd1; end
+            S1: begin o0 = 2'd0; end
+            S2: begin o0 = 2'd1; end
+            S3: begin o0 = 2'd3; end
+            S4: begin o0 = 2'd3; end
+            S5: begin o0 = 2'd1; end
+            S6: begin o0 = 2'd0; end
+            S7: begin o0 = 2'd1; end
+            S8: begin o0 = 2'd1; end
+            S9: begin o0 = 2'd3; end
+            default: begin o0 = '0; end
+        endcase
+    end
+    always_ff @(posedge clk) begin
+        if (rst) state <= S0;
+        else     state <= next_state;
+    end
+endmodule

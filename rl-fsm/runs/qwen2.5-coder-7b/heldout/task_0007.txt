@@ -1,0 +1,59 @@
+```systemverilog
+module fsm_hold (
+    input  logic i0,
+    input  logic i1,
+    output logic o0,
+    output logic o1
+);
+    // State definitions
+    typedef enum logic [1:0] {
+        S0 = 2'b00,
+        S1 = 2'b01,
+        S2 = 2'b10,
+        S3 = 2'b11
+    } state_t;
+
+    // Current state and next state signals
+    state_t state, next_state;
+
+    // Moore output logic
+    always_comb begin
+        case (state)
+            S0: begin
+                o0 = 0;
+                o1 = 1;
+                if (i1) next_state = S2;
+                else next_state = S1;
+            end
+            S1: begin
+                o0 = 1;
+                o1 = 0;
+                if (i0) next_state = S2;
+                else next_state = S0;
+            end
+            S2: begin
+                o0 = 1;
+                o1 = 0;
+                next_state = S2;
+            end
+            S3: begin
+                o0 = 1;
+                o1 = 0;
+                if (i1) next_state = S3;
+                else next_state = S1;
+            end
+            default: begin
+                o0 = 0;
+                o1 = 0;
+                next_state = S0;
+            end
+        endcase
+    end
+
+    // State register
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) state <= S0;
+        else state <= next_state;
+    end
+endmodule
+```

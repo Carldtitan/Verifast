@@ -1,0 +1,46 @@
+```systemverilog
+module fsm_load (
+    input i0,
+    output o0
+);
+
+    // State definitions
+    localparam S0 = 2'b00;
+    localparam S1 = 2'b01;
+    localparam S2 = 2'b10;
+
+    // State register
+    reg [1:0] state;
+
+    // Output register
+    reg o0_reg;
+
+    // State transition logic
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            case (state)
+                S0: state <= (i0) ? S0 : S0;
+                S1: state <= (i0) ? S1 : S1;
+                S2: state <= (i0) ? S0 : S0;
+                default: state <= S0;
+            endcase
+        end
+    end
+
+    // Output logic
+    always @(*) begin
+        case (state)
+            S0: o0_reg = 1'b1;
+            S1: o0_reg = 1'b1;
+            S2: o0_reg = 1'b0;
+            default: o0_reg = 1'b1;
+        endcase
+    end
+
+    // Output assignment
+    assign o0 = o0_reg;
+
+endmodule
+```

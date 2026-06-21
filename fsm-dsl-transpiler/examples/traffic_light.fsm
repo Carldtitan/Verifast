@@ -1,0 +1,24 @@
+# traffic_light.fsm — three-phase light that advances one phase per 'tick'.
+# Each state drives a distinct 2-bit code on 'light' (Moore output).
+machine traffic_light {
+  in  bit tick          # advance to the next phase when high
+  out bit[1:0] light    # distinct 2-bit code per phase
+
+  reset = RED
+
+  state RED {           # phase 0
+    light = 0
+    when tick -> GREEN
+    else      -> RED
+  }
+  state GREEN {         # phase 1
+    light = 1
+    when tick -> YELLOW
+    else      -> GREEN
+  }
+  state YELLOW {        # phase 2
+    light = 2
+    when tick -> RED
+    else      -> YELLOW
+  }
+}

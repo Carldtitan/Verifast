@@ -1,0 +1,74 @@
+```systemverilog
+module fsm_run (
+    input i0,
+    output o0
+);
+
+    // State definitions
+    typedef enum logic [2:0] {
+        S0 = 3'b000,
+        S1 = 3'b001,
+        S2 = 3'b010,
+        S3 = 3'b011,
+        S4 = 3'b100
+    } state_t;
+
+    // Current and next state signals
+    state_t state, next_state;
+
+    // Moore output logic
+    assign o0 = (state == S3 || state == S4) ? 1'b1 : 1'b0;
+
+    // State transition logic
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= S0;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    always_comb begin
+        next_state = state;
+        case (state)
+            S0: begin
+                if (i0) begin
+                    next_state = S2;
+                end else begin
+                    next_state = S3;
+                end
+            end
+            S1: begin
+                if (i0) begin
+                    next_state = S4;
+                end else begin
+                    next_state = S2;
+                end
+            end
+            S2: begin
+                if (i0) begin
+                    next_state = S0;
+                end else begin
+                    next_state = S1;
+                end
+            end
+            S3: begin
+                if (i0) begin
+                    next_state = S4;
+                end else begin
+                    next_state = S0;
+                end
+            end
+            S4: begin
+                if (i0) begin
+                    next_state = S3;
+                end else begin
+                    next_state = S4;
+                end
+            end
+            default: next_state = S0; // Default to S0 if state is invalid
+        endcase
+    end
+
+endmodule
+```

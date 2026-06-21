@@ -1,0 +1,31 @@
+machine fsm_load {
+  in bit i0
+  in bit i1
+  in bit i2
+  out bit[1:0] o0
+  reset = S0
+  state S0 {
+    o0 = 2
+    when i1 -> S2
+    when i2 -> S2
+    when i0 -> S3
+    else -> S3
+  }
+  state S1 {
+    o0 = 3
+    when i1 -> S3
+    when i2 -> S0
+    when i2 -> S3
+    else -> S1
+  }
+  state S2 {
+    o0 = 2
+    when i1 -> S2
+    when i1 -> S0
+    else -> S1
+  }
+  state S3 {
+    o0 = 1
+    else -> S0
+  }
+}

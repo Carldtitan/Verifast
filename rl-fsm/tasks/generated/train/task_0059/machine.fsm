@@ -1,0 +1,16 @@
+machine fsm_wait {
+  in bit i0
+  in bit i1
+  in bit i2
+  out bit o0
+  reset = S0
+  state S0 {
+    o0 = 0
+    when i2 -> S0
+    else -> S0
+  }
+  state S1 {
+    o0 = 0
+    else -> S1
+  }
+}

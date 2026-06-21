@@ -1,0 +1,7 @@
+{
+  "tasks": 20,
+  "functional_pass_at_1": 1.0,
+  "fully_clean_pass_at_1": 0.0,
+  "compiled": 1.0,
+  "avg_reward": 0.9
+}
